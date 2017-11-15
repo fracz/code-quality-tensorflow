@@ -5,6 +5,7 @@ import csv
 import math
 from random import shuffle
 import sys
+import os
 
 ####################### PARAMS
 vocabulary_size = 129 # liczba tokenow w kodzie
@@ -19,11 +20,16 @@ restore = False
 
 ################# DATA INPUT
 
+datasetName = sys.argv[1]
+savePath = './trained/{}'.format(datasetName)
+if not os.path.exists(savePath):
+    os.makedirs(savePath)
+
 class RefactorDataset():
     def __init__(self):
-        self.data = np.genfromtxt('../input/rnn/input.csv', delimiter=',')
-        self.labels = np.genfromtxt('../input/rnn/labels.csv', delimiter=',')
-        self.seqlen = np.genfromtxt('../input/rnn/lengths.csv', delimiter=',')
+        self.data = np.genfromtxt('./input/{}/input.csv'.format(datasetName), delimiter=',')
+        self.labels = np.genfromtxt('./input/{}/labels.csv'.format(datasetName), delimiter=',')
+        self.seqlen = np.genfromtxt('./input/{}/lengths.csv'.format(datasetName), delimiter=',')
         self.max_seqlen = len(self.data[0])
         self.test_len = math.floor(len(self.data) * .15)
         self.batch_id = self.test_len
@@ -49,10 +55,6 @@ dataset = RefactorDataset()
 
 ############################################ RNN
 
-device_name = sys.argv[1]
-
-#with tf.device("/" + device_name):
-
 train_inputs = tf.placeholder(tf.int32, shape=[None, dataset.max_seqlen])
 train_outputs = tf.placeholder(tf.float32, shape=[None, num_classes])
 # https://github.com/aymericdamien/TensorFlow-Examples/blob/master/examples/3_NeuralNetworks/dynamic_rnn.py
@@ -77,47 +79,33 @@ def BiRNN(x, seqlen, weights, biases):
     outputs, _, _ = rnn.static_bidirectional_rnn(lstm_fw_cell, lstm_bw_cell, inputs, dtype=tf.float32, sequence_length=seqlen)
     outputs = tf.transpose(tf.stack(outputs), perm=[1, 0, 2])
     print(outputs.shape)
-    #outputs = tf.reduce_max(outputs, axis=1)
+    outputs = tf.reduce_max(outputs, axis=1)
     print(outputs.shape)
-    #return tf.matmul(outputs[-1], weights['out']) + biases['out']
-    z = tf.layers.dense(outputs, 2)
-    return z
-    #return tf.matmul(outputs, weights['out']) + biases['out']
-
-def cost(prediction, target):
-    target = tf.expand_dims(target,axis=1)
-    print('tagret shape: {}'.format(target.shape))
-    cross_entropy = -tf.reduce_mean(target * tf.log(prediction), [1, 2])
-    return tf.reduce_mean(cross_entropy)
+    return tf.matmul(outputs, weights['out']) + biases['out']
 
 logits = BiRNN(embed, seqlen, weights, biases)
 prediction = tf.nn.softmax(logits)
-loss_op = cost(prediction, train_outputs)
-#loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=train_outputs))
-print(loss_op.shape)
-#optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
+loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=train_outputs))
 optimizer = tf.train.AdamOptimizer(learning_rate=1e-4)
 train_op = optimizer.minimize(loss_op)
 
-print(prediction.shape)
-prediction = tf.reduce_mean(prediction, axis=1)
-#prediction = prediction[:, -1, :]
-print(prediction.shape)
 correct_pred = tf.equal(tf.argmax(prediction, 1), tf.argmax(train_outputs, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 init = tf.global_variables_initializer()
 
 saver = tf.train.Saver()
-    
+
 config = tf.ConfigProto(
 #    device_count = {'GPU': 2}
 #    , log_device_placement=True
 )
 
+
+
 with tf.Session(config=config) as sess:
     if restore:
-        new_saver = tf.train.import_meta_graph('./trained/model.meta')
-        new_saver.restore(sess, tf.train.latest_checkpoint('./trained'))
+        new_saver = tf.train.import_meta_graph(savePath + '/model.meta')
+        new_saver.restore(sess, tf.train.latest_checkpoint(savePath))
         all_vars = tf.get_collection('vars')
         for v in all_vars:
             v_ = sess.run(v)
@@ -142,11 +130,10 @@ with tf.Session(config=config) as sess:
 
         print("Optimization Finished!")
 
-        saver.save(sess, './trained/model')
+        saver.save(sess, savePath + '/model')
 
     test_x, test_y, test_seqlen = dataset.test()
 
     print("Testing Accuracy:", sess.run(accuracy, feed_dict={train_inputs: test_x,
                                                             train_outputs: test_y,
                                                             seqlen: test_seqlen}))
-
