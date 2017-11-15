@@ -1,0 +1,1 @@
+Tylko metody, które pomiêdzy before i after ró¿ni³y siê liczb¹ tokenów co najmniej 10, spe³niaj¹ce 3 < d³ugoœæ w tokenach <= 100, before to z³e, after dobre

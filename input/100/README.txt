@@ -1,0 +1,1 @@
+Wszystkie metody, niefiltrowane, spe³niaj¹ce 3 < d³ugoœæ w tokenach <= 100, metody z zestawu before to z³e a z after - dobre
