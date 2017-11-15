@@ -64,13 +64,8 @@ seqlen = tf.placeholder(tf.int32, [None])
 embeddings = tf.Variable(tf.random_uniform([vocabulary_size, embedding_size], -1.0, 1.0))
 embed = tf.nn.embedding_lookup(embeddings, train_inputs)
 
-weights = {
-    # Hidden layer weights => 2*n_hidden because of forward + backward cells
-    'out': tf.Variable(tf.random_normal([2*num_hidden, num_classes]))
-}
-biases = {
-    'out': tf.Variable(tf.random_normal([num_classes]))
-}
+weights = tf.Variable(tf.random_normal([2*num_hidden, num_classes]))
+biases = tf.Variable(tf.random_normal([num_classes]))
 
 def BiRNN(x, seqlen, weights, biases):
     inputs = tf.unstack(x, num=dataset.max_seqlen, axis=1)
@@ -78,10 +73,8 @@ def BiRNN(x, seqlen, weights, biases):
     lstm_bw_cell = rnn.BasicLSTMCell(num_hidden, forget_bias=1.0)
     outputs, _, _ = rnn.static_bidirectional_rnn(lstm_fw_cell, lstm_bw_cell, inputs, dtype=tf.float32, sequence_length=seqlen)
     outputs = tf.transpose(tf.stack(outputs), perm=[1, 0, 2])
-    print(outputs.shape)
     outputs = tf.reduce_max(outputs, axis=1)
-    print(outputs.shape)
-    return tf.matmul(outputs, weights['out']) + biases['out']
+    return tf.matmul(outputs, weights) + biases
 
 logits = BiRNN(embed, seqlen, weights, biases)
 prediction = tf.nn.softmax(logits)

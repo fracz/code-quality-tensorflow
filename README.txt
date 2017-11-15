@@ -11,3 +11,6 @@ srun -p plgrid-gpu -N 1 --ntasks-per-node=1 -n 1 --gres=gpu:1 -A scqfracz --time
 
 Uruchamianie modelu:
 python quality.py 100-fake
+
+Uruchamianie z dumpem do pliku live:
+stdbuf -oL nohup ./run-model2.sh &> model2.log &
