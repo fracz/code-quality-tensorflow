@@ -130,7 +130,7 @@ with tf.Session(config=config) as sess:
     else:
         sess.run(init)
 
-        validate_x, validate_y, validate_seqlen = dataset.validation(10 * batch_size)
+        test_x, test_y, test_seqlen = dataset.test()
 
         for step in range(1, training_steps+1):
             batch_x, batch_y, batch_seqlen = dataset.next(batch_size)
@@ -139,9 +139,9 @@ with tf.Session(config=config) as sess:
             sess.run(train_op, feed_dict={train_inputs: batch_x, train_outputs: batch_y, seqlen: batch_seqlen})
             if step % display_step == 0 or step == 1:
                 # Calculate batch loss and accuracy
-                loss, acc = sess.run([loss_op, accuracy], feed_dict={train_inputs: validate_x,
-                                                                     train_outputs: validate_y,
-                                                                     seqlen: validate_seqlen})
+                loss, acc = sess.run([loss_op, accuracy], feed_dict={train_inputs: test_x,
+                                                                     train_outputs: test_y,
+                                                                     seqlen: test_seqlen})
                 print(str(step) + "\t" + "{:.4f}".format(loss) + "\t" + "{:.3f}".format(acc))
                 sys.stdout.flush()
 
