@@ -1,1 +1,1 @@
-Zestaw changed-before, niefiltrowany, spe³niaj¹cy 3 < d³ugoœæ w tokenach <= 100, jeœli zawiera IF to uznawany za z³y kod, przeciwnym razie dobry
+ï»¿Zestaw changed-before, niefiltrowany, speÅ‚niajÄ…cy 3 < dÅ‚ugoÅ›Ä‡ w tokenach <= 100, jeÅ›li zawiera IF to uznawany za zÅ‚y kod, przeciwnym razie dobry

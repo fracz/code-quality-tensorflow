@@ -1,1 +1,1 @@
-Tylko metody, które pomiêdzy before i after ró¿ni³y siê liczb¹ tokenów co najmniej 10, spe³niaj¹ce 3 < d³ugoœæ w tokenach <= 100, before to z³e, after dobre
+ï»¿Tylko metody, ktÃ³re pomiÄ™dzy before i after rÃ³Å¼niÅ‚y siÄ™ liczbÄ… tokenÃ³w co najmniej 10, speÅ‚niajÄ…ce 3 < dÅ‚ugoÅ›Ä‡ w tokenach <= 100, before to zÅ‚e, after dobre
