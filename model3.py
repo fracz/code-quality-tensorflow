@@ -19,11 +19,16 @@ restore = False
 
 ################# DATA INPUT
 
+datasetName = sys.argv[1]
+savePath = './trained/model3/{}'.format(datasetName)
+if not os.path.exists(savePath):
+    os.makedirs(savePath)
+
 class RefactorDataset():
     def __init__(self):
-        self.data = np.genfromtxt('../input/rnn/input.csv', delimiter=',')
-        self.labels = np.genfromtxt('../input/rnn/labels.csv', delimiter=',')
-        self.seqlen = np.genfromtxt('../input/rnn/lengths.csv', delimiter=',')
+        self.data = np.genfromtxt('./input/{}/input.csv'.format(datasetName), delimiter=',')
+        self.labels = np.genfromtxt('./input/{}/labels.csv'.format(datasetName), delimiter=',')
+        self.seqlen = np.genfromtxt('./input/{}/lengths.csv'.format(datasetName), delimiter=',')
         self.max_seqlen = len(self.data[0])
         self.test_len = math.floor(len(self.data) * .15)
         self.batch_id = self.test_len
@@ -108,7 +113,7 @@ accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 init = tf.global_variables_initializer()
 
 saver = tf.train.Saver()
-    
+
 config = tf.ConfigProto(
 #    device_count = {'GPU': 2}
 #    , log_device_placement=True
@@ -116,8 +121,8 @@ config = tf.ConfigProto(
 
 with tf.Session(config=config) as sess:
     if restore:
-        new_saver = tf.train.import_meta_graph('./trained/model.meta')
-        new_saver.restore(sess, tf.train.latest_checkpoint('./trained'))
+        new_saver = tf.train.import_meta_graph(savePath + '/model.meta')
+        new_saver.restore(sess, tf.train.latest_checkpoint(savePath))
         all_vars = tf.get_collection('vars')
         for v in all_vars:
             v_ = sess.run(v)
@@ -142,11 +147,10 @@ with tf.Session(config=config) as sess:
 
         print("Optimization Finished!")
 
-        saver.save(sess, './trained/model')
+        saver.save(sess, savePath + '/model')
 
     test_x, test_y, test_seqlen = dataset.test()
 
     print("Testing Accuracy:", sess.run(accuracy, feed_dict={train_inputs: test_x,
                                                             train_outputs: test_y,
                                                             seqlen: test_seqlen}))
-

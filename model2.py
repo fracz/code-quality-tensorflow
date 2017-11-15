@@ -21,7 +21,7 @@ restore = False
 ################# DATA INPUT
 
 datasetName = sys.argv[1]
-savePath = './trained/{}'.format(datasetName)
+savePath = './trained/model2/{}'.format(datasetName)
 if not os.path.exists(savePath):
     os.makedirs(savePath)
 
