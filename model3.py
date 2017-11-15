@@ -142,7 +142,7 @@ with tf.Session(config=config) as sess:
                 loss, acc = sess.run([loss_op, accuracy], feed_dict={train_inputs: test_x,
                                                                      train_outputs: test_y,
                                                                      seqlen: test_seqlen})
-                print(str(step) + "\t" + "{:.4f}".format(loss) + "\t" + "{:.3f}".format(acc))
+                print(str(step) + "\t" + "{:.4f}".format(loss).replace('.', ',') + "\t" + "{:.3f}".format(acc).replace('.', ','))
                 sys.stdout.flush()
 
         print("Optimization Finished!")
