@@ -6,14 +6,20 @@
 ## Ilość pamięci przypadającej na jeden rdzeń obliczeniowy (domyślnie 5GB na rdzeń)
 #SBATCH --mem-per-cpu=4092mb
 ## Maksymalny czas trwania zlecenia (format HH:MM:SS)
-#SBATCH --time=12:00:00
+#SBATCH --time=0:05:00
 ## Nazwa grantu do rozliczenia zużycia zasobów
 #SBATCH -A scqfracz
 ## Specyfikacja partycji
 #SBATCH -p plgrid-gpu
 ## Parametr wyznaczający indeksy zadania tablicowego
-#SBATCH --array=
+#SBATCH --array=1,2
 #SBATCH --gres=gpu:1
+
+export DATASET1=100-diff10
+export DATASET2=200-diff10
+
+export CURRENT_DATASET_VARIABLE=DATASET$SLURM_ARRAY_TASK_ID
+export DATASET=${!CURRENT_DATASET_VARIABLE}
 
 cd /net/people/plgfracz/quality
 
@@ -23,4 +29,4 @@ module load plgrid/tools/python/3.6.0
 source venv/bin/activate
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/net/people/plgfracz/cudnn/cuda/lib64
 
-{ time stdbuf -oL python model2.py $SLURM_ARRAY_TASK_ID &> logs/model2-$SLURM_ARRAY_TASK_ID.log ; } 2> log/model2-$SLURM_ARRAY_TASK_ID-time.log
+stdbuf -oL python model2.py $DATASET --steps 50000 --numHidden 128 &> logs/model2-$DATASET.log
