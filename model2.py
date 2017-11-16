@@ -6,22 +6,44 @@ import math
 from random import shuffle
 import sys
 import os
+import argparse
+
+def parseArguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("datasetName", help="Dataset name.")
+    parser.add_argument("-nh", "--numHidden", help="Num hidden", type=int, default=128)
+    parser.add_argument("-s", "--steps", help="Training steps.", type=int, default=50000)
+    parser.add_argument("-b", "--batchSize", help="Batch size.", type=int, default=64)
+    parser.add_argument("-d", "--displayStep", help="Display step.", type=int, default=200)
+    args = parser.parse_args()
+    return args
+
+args = parseArguments()
 
 ####################### PARAMS
 vocabulary_size = 129 # liczba tokenow w kodzie
 embedding_size = 100 # rozmiar wektora wejsciowego (arbitralny chyba?)
-num_hidden = 128
+num_hidden = args.numHidden
 num_classes = 2
-training_steps = 50000
-batch_size = 64 #128
-display_step = 20
+training_steps = args.steps
+batch_size = args.batchSize
+display_step = args.displayStep
+learning_rate = 1e-4
 restore = False
-
 
 ################# DATA INPUT
 
-datasetName = sys.argv[1]
-savePath = './trained/model2/{}'.format(datasetName)
+datasetName = args.datasetName
+
+print("""
+*****************************************************
+Dataset: {}
+Num hidden: {}, Steps: {}, Display step: {}
+*****************************************************
+
+""".format(datasetName, num_hidden, training_steps, display_step))
+
+savePath = './trained/model2/{}/{}-{}'.format(datasetName, training_steps, num_hidden)
 if not os.path.exists(savePath):
     os.makedirs(savePath)
 
@@ -33,7 +55,7 @@ class RefactorDataset():
         self.max_seqlen = len(self.data[0])
         self.test_len = math.floor(len(self.data) * .15)
         self.batch_id = self.test_len
-        print("Input size: " + str(self.max_seqlen) + 'x' + str(len(self.data)))
+        print("Dataset read success! Size: " + str(self.max_seqlen) + 'x' + str(len(self.data)))
 
     def validation(self, batch_size):
         return self.data[0:batch_size], self.labels[0:batch_size], self.seqlen[0:batch_size]
@@ -79,7 +101,7 @@ def BiRNN(x, seqlen, weights, biases):
 logits = BiRNN(embed, seqlen, weights, biases)
 prediction = tf.nn.softmax(logits)
 loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=train_outputs))
-optimizer = tf.train.AdamOptimizer(learning_rate=1e-4)
+optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
 train_op = optimizer.minimize(loss_op)
 
 correct_pred = tf.equal(tf.argmax(prediction, 1), tf.argmax(train_outputs, 1))
