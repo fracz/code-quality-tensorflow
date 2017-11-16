@@ -59,7 +59,7 @@ class RefactorDataset():
         self.lengths_after = np.genfromtxt('./input/{}/lengths-after.csv'.format(datasetName), delimiter=',')
         self.max_seqlen = len(self.data_before[0])
         self.test_len = math.floor(len(self.data_before) * .15)
-        self.batch_id = self.test_len
+        self.batch_id = 0#self.test_len
         print("Input size: " + str(self.max_seqlen) + 'x' + str(len(self.data_before)))
 
     def validation(self, batch_size):
@@ -74,18 +74,22 @@ class RefactorDataset():
             self.batch_id = self.test_len
         batch_before = np.array([]).reshape(0, self.max_seqlen)
         batch_after = np.array([]).reshape(0, self.max_seqlen)
-        seqlen_before = np.array([]).reshape(0, self.max_seqlen)
-        seqlen_after = np.array([]).reshape(0, self.max_seqlen)
+        seqlen_before = np.array([])
+        seqlen_after = np.array([])
         batch_labels = np.array([]).reshape(0, 2)
         for i in range(self.batch_id, min(self.batch_id + batch_size, len(self.data_before))):
             inverse = not random.getrandbits(1)
             if inverse:
                 batch_before = np.vstack([batch_before, self.data_after[i]])
                 batch_after = np.vstack([batch_after, self.data_before[i]])
+                seqlen_before = np.append(seqlen_before, self.lengths_after[i])
+                seqlen_after = np.append(seqlen_after, self.lengths_before[i])
                 batch_labels = np.vstack([batch_labels, [0, 1]])
             else:
                 batch_before = np.vstack([batch_before, self.data_before[i]])
                 batch_after = np.vstack([batch_after, self.data_after[i]])
+                seqlen_before = np.append(seqlen_before, self.lengths_before[i])
+                seqlen_after = np.append(seqlen_after, self.lengths_after[i])
                 batch_labels = np.vstack([batch_labels, [1, 0]])
 
         self.batch_id = min(self.batch_id + batch_size, len(self.data_before))
@@ -93,8 +97,8 @@ class RefactorDataset():
 
 dataset = RefactorDataset()
 
-#batch_before, batch_after, seqlen_before, seqlen_after, batch_labels = dataset.next(5)
-#print("BEFORE:\n", batch_before, "\nAFTER:\n", batch_after, "\nLABELS:\n", batch_labels)
+batch_before, batch_after, seqlen_before, seqlen_after, batch_labels = dataset.next(5)
+print("BEFORE:\n", batch_before, seqlen_before, "\nAFTER:\n", batch_after, seqlen_after, "\nLABELS:\n", batch_labels)
 
 quit()
 
