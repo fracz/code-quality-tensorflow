@@ -59,14 +59,15 @@ class RefactorDataset():
         self.lengths_after = np.genfromtxt('./input/{}/lengths-after.csv'.format(datasetName), delimiter=',')
         self.max_seqlen = len(self.data_before[0])
         self.test_len = math.floor(len(self.data_before) * .15)
-        self.batch_id = 0#self.test_len
+        self.batch_id = 0
+        self.test_data = self.next(self.test_len)
         print("Input size: " + str(self.max_seqlen) + 'x' + str(len(self.data_before)))
 
     def validation(self, batch_size):
-        return self.data[0:batch_size], self.labels[0:batch_size], self.seqlen[0:batch_size]
+        return self.test_data[0:batch_size]
 
     def test(self):
-        return self.data[0:self.test_len], self.labels[0:self.test_len], self.seqlen[0:self.test_len]
+        return self.test_data
 
     def next(self, batch_size):
         # Return a batch of data. When dataset end is reached, start over.
@@ -97,35 +98,45 @@ class RefactorDataset():
 
 dataset = RefactorDataset()
 
-batch_before, batch_after, seqlen_before, seqlen_after, batch_labels = dataset.next(5)
-print("BEFORE:\n", batch_before, seqlen_before, "\nAFTER:\n", batch_after, seqlen_after, "\nLABELS:\n", batch_labels)
+#batch_before, batch_after, seqlen_before, seqlen_after, batch_labels = dataset.next(5)
+#print("BEFORE:\n", batch_before, seqlen_before, "\nAFTER:\n", batch_after, seqlen_after, "\nLABELS:\n", batch_labels)
 
-quit()
 
 ############################################ RNN
 
-train_inputs = tf.placeholder(tf.int32, shape=[None, dataset.max_seqlen])
+train_inputs_before = tf.placeholder(tf.int32, shape=[None, dataset.max_seqlen])
+train_inputs_after = tf.placeholder(tf.int32, shape=[None, dataset.max_seqlen])
 train_outputs = tf.placeholder(tf.float32, shape=[None, num_classes])
 # https://github.com/aymericdamien/TensorFlow-Examples/blob/master/examples/3_NeuralNetworks/dynamic_rnn.py
-seqlen = tf.placeholder(tf.int32, [None])
+seqlen_before = tf.placeholder(tf.int32, [None])
+seqlen_after = tf.placeholder(tf.int32, [None])
 
 # https://www.tensorflow.org/tutorials/word2vec#building_the_graph
 embeddings = tf.Variable(tf.random_uniform([vocabulary_size, embedding_size], -1.0, 1.0))
-embed = tf.nn.embedding_lookup(embeddings, train_inputs)
+embed_before = tf.nn.embedding_lookup(embeddings, train_inputs_before)
+embed_after = tf.nn.embedding_lookup(embeddings, train_inputs_after)
 
-weights = tf.Variable(tf.random_normal([2*num_hidden, num_classes]))
+weights = tf.Variable(tf.random_normal([4*num_hidden, num_classes]))
 biases = tf.Variable(tf.random_normal([num_classes]))
 
-def BiRNN(x, seqlen, weights, biases):
+def BiRNN(x, seqlen):
     inputs = tf.unstack(x, num=dataset.max_seqlen, axis=1)
     lstm_fw_cell = rnn.BasicLSTMCell(num_hidden, forget_bias=1.0)
     lstm_bw_cell = rnn.BasicLSTMCell(num_hidden, forget_bias=1.0)
     outputs, _, _ = rnn.static_bidirectional_rnn(lstm_fw_cell, lstm_bw_cell, inputs, dtype=tf.float32, sequence_length=seqlen)
     outputs = tf.transpose(tf.stack(outputs), perm=[1, 0, 2])
     outputs = tf.reduce_max(outputs, axis=1)
-    return tf.matmul(outputs, weights) + biases
+    return outputs
 
-logits = BiRNN(embed, seqlen, weights, biases)
+with tf.variable_scope('before'):
+    outputs_before = BiRNN(embed_before, seqlen_before)
+
+with tf.variable_scope('after'):
+    outputs_after = BiRNN(embed_after, seqlen_after)
+
+outputs = tf.concat([outputs_before, outputs_after], 1)
+logits = tf.matmul(outputs, weights) + biases
+
 prediction = tf.nn.softmax(logits)
 loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=train_outputs))
 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
@@ -155,27 +166,27 @@ with tf.Session(config=config) as sess:
     else:
         sess.run(init)
 
-        test_x, test_y, test_seqlen = dataset.test()
+        test_before, test_after, test_seqlen_before, test_seqlen_after, test_labels = dataset.test()
 
         for step in range(1, training_steps+1):
-            batch_x, batch_y, batch_seqlen = dataset.next(batch_size)
+            batch_before, batch_after, batch_seqlen_before, batch_seqlen_after, batch_labels = dataset.next(batch_size)
 
             # Run optimization op (backprop)
-            sess.run(train_op, feed_dict={train_inputs: batch_x, train_outputs: batch_y, seqlen: batch_seqlen})
+            sess.run(train_op, feed_dict={train_inputs_before: batch_before,
+                                          train_inputs_after: batch_after,
+                                          train_outputs: batch_labels,
+                                          seqlen_before: batch_seqlen_before,
+                                          seqlen_after: batch_seqlen_after})
             if step % display_step == 0 or step == 1:
                 # Calculate batch loss and accuracy
-                loss, acc = sess.run([loss_op, accuracy], feed_dict={train_inputs: test_x,
-                                                                     train_outputs: test_y,
-                                                                     seqlen: test_seqlen})
+                loss, acc = sess.run([loss_op, accuracy], feed_dict={train_inputs_before: test_before,
+                                                                      train_inputs_after: test_after,
+                                                                      train_outputs: test_labels,
+                                                                      seqlen_before: test_seqlen_before,
+                                                                      seqlen_after: test_seqlen_after})
                 print(str(step) + "\t" + "{:.4f}".format(loss).replace('.', ',') + "\t" + "{:.3f}".format(acc).replace('.', ','))
                 sys.stdout.flush()
 
         print("Optimization Finished!")
 
         saver.save(sess, savePath + '/model')
-
-    test_x, test_y, test_seqlen = dataset.test()
-
-    print("Testing Accuracy:", sess.run(accuracy, feed_dict={train_inputs: test_x,
-                                                            train_outputs: test_y,
-                                                            seqlen: test_seqlen}))
