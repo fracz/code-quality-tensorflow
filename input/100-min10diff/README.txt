@@ -1,1 +1,0 @@
-﻿Tylko metody, które pomiędzy before i after różniły się liczbą tokenów co najmniej 10, spełniające 3 < długość w tokenach <= 100, before to złe, after dobre

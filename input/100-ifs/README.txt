@@ -1,1 +1,0 @@
-﻿Zestaw changed-before, niefiltrowany, spełniający 3 < długość w tokenach <= 100, jeśli zawiera IF to uznawany za zły kod, przeciwnym razie dobry

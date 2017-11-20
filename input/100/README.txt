@@ -1,1 +1,0 @@
-﻿Wszystkie metody, niefiltrowane, spełniające 3 < długość w tokenach <= 100, metody z zestawu before to złe a z after - dobre

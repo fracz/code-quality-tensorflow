@@ -1,0 +1,1 @@
+﻿max 100 tokenów, metody before & after ale tylko te które różnią się co najmniej 10 tokenami, dane do modelu 4
