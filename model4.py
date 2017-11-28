@@ -19,13 +19,14 @@ def parseArguments():
     parser.add_argument("-s", "--steps", help="Training steps.", type=int, default=50000)
     parser.add_argument("-b", "--batchSize", help="Batch size.", type=int, default=64)
     parser.add_argument("-d", "--displayStep", help="Display step.", type=int, default=200)
+    parser.add_argument("-t", "--tokensCount", help="Vocabulary size.", type=int, default=129)
     args = parser.parse_args()
     return args
 
 args = parseArguments()
 
 ####################### PARAMS
-vocabulary_size = 129 # liczba tokenow w kodzie
+vocabulary_size = args.tokensCount # liczba tokenow w kodzie
 embedding_size = 100 # rozmiar wektora wejsciowego (arbitralny chyba?)
 num_hidden = args.numHidden
 num_classes = 2

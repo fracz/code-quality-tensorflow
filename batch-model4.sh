@@ -15,12 +15,14 @@
 #SBATCH --array=2,3,4,5,6
 #SBATCH --gres=gpu:1
 
-export DATASET1=100-diff10-ba-php
-export DATASET2=100-diff10-ba-java
-export DATASET3=100-diff10to50-ba-java
-export DATASET4=100-diff10to50-ba-php
-export DATASET5=200-diff10to50-ba-java
-export DATASET6=200-diff10to50-ba-php
+export DATASET1=100-diff10-java-strict
+export DATASET2=100-diff10to50-java-strict
+export DATASET3=100-diff10-java-strict-no-parenthesis
+export DATASET4=100-diff10to50-java-strict-no-parenthesis
+export DATASET5=100-diff10-php-strict
+export DATASET6=100-diff10to50-php-strict
+export DATASET7=100-diff10-php-strict-no-parenthesis
+export DATASET8=100-diff10to50-php-strict-no-parenthesis
 
 
 export CURRENT_DATASET_VARIABLE=DATASET$SLURM_ARRAY_TASK_ID
@@ -34,4 +36,4 @@ module load plgrid/tools/python/3.6.0
 source venv/bin/activate
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/net/people/plgfracz/cudnn/cuda/lib64
 
-stdbuf -oL python model4.py $DATASET --steps 50000 --numHidden 256 &> logs/model4-$DATASET.log
+stdbuf -oL python model4.py $DATASET --steps 50000 --numHidden 256 --tokensCount 129 &> logs/model4-$DATASET.log
