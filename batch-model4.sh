@@ -12,7 +12,7 @@
 ## Specyfikacja partycji
 #SBATCH -p plgrid-gpu
 ## Parametr wyznaczający indeksy zadania tablicowego
-#SBATCH --array=11
+#SBATCH --array=12
 #SBATCH --gres=gpu:1
 
 export DATASET1=100-diff10-java-strict
@@ -26,6 +26,7 @@ export DATASET8=100-diff10to50-php-strict-no-parenthesis
 export DATASET9=200-diff5to100-java-strict-noonlyadddel
 export DATASET10=100-diff10to50-java-strict-noonlyadddel
 export DATASET11=code-fracz-291
+export DATASET12=code-fracz-518
 
 
 export CURRENT_DATASET_VARIABLE=DATASET$SLURM_ARRAY_TASK_ID
