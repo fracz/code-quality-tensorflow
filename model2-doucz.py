@@ -157,8 +157,3 @@ with tf.Session(config=config) as sess:
 
         saver.save(sess, savePath + '/model')
 
-    test_x, test_y, test_seqlen = dataset.test()
-
-    print("Testing Accuracy:", sess.run(accuracy, feed_dict={train_inputs: test_x,
-                                                            train_outputs: test_y,
-                                                            seqlen: test_seqlen}))

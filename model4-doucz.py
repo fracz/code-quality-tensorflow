@@ -99,7 +99,7 @@ class RefactorDataset():
         return batch_before, batch_after, seqlen_before, seqlen_after, batch_labels
 
 dataset = RefactorDataset(datasetName + "-rest-of-data")
-datasetClever = RefactorDataset(datasetName, .01)
+datasetClever = RefactorDataset(datasetName)
 
 #batch_before, batch_after, seqlen_before, seqlen_after, batch_labels = dataset.next(5)
 #print("BEFORE:\n", batch_before, seqlen_before, "\nAFTER:\n", batch_after, seqlen_after, "\nLABELS:\n", batch_labels)
@@ -171,6 +171,7 @@ with tf.Session(config=config) as sess:
         sess.run(init)
 
         test_before, test_after, test_seqlen_before, test_seqlen_after, test_labels = dataset.test()
+        test_clever_before, test_clever_after, test_clever_seqlen_before, test_clever_seqlen_after, test_clever_labels = datasetClever.test()
 
         for step in range(1, training_steps+1):
             theDataset = dataset
@@ -194,7 +195,12 @@ with tf.Session(config=config) as sess:
                                                                       train_outputs: test_labels,
                                                                       seqlen_before: test_seqlen_before,
                                                                       seqlen_after: test_seqlen_after})
-                print(str(step) + "\t" + "{:.4f}".format(loss).replace('.', ',') + "\t" + "{:.3f}".format(acc).replace('.', ','))
+                loss_clever, acc_clever = sess.run([loss_op, accuracy], feed_dict={train_inputs_before: test_clever_before,
+                                                                      train_inputs_after: test_clever_after,
+                                                                      train_outputs: test_clever_labels,
+                                                                      seqlen_before: test_clever_seqlen_before,
+                                                                      seqlen_after: test_clever_seqlen_after})
+                print(str(step) + "\t" + "{:.4f}".format(loss).replace('.', ',') + "\t" + "{:.3f}".format(acc).replace('.', ',') + "\t" + "{:.4f}".format(loss_clever).replace('.', ',') + "\t" + "{:.3f}".format(acc_clever).replace('.', ','))
                 sys.stdout.flush()
 
         print("Optimization Finished!")
