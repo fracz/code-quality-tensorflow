@@ -140,7 +140,7 @@ with tf.Session(config=config) as sess:
                 if not cleverUsed:
                     print("Now teaching with clever!")
                     cleverUsed = True
-            batch_x, batch_y, batch_seqlen = dataset.next(batch_size)
+            batch_x, batch_y, batch_seqlen = theDataset.next(batch_size)
 
             # Run optimization op (backprop)
             sess.run(train_op, feed_dict={train_inputs: batch_x, train_outputs: batch_y, seqlen: batch_seqlen})
