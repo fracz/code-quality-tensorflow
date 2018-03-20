@@ -63,7 +63,7 @@ class RefactorDataset():
         self.test_len = math.floor(len(self.data_before) * testProportion)
         self.batch_id = 0
         self.test_data = self.next(self.test_len)
-        print("Input size: " + str(self.max_seqlen) + 'x' + str(len(self.data_before)))
+        print("Input size: " + str(self.max_seqlen) + 'x' + str(len(self.data_before)) + " Test set: " + str(self.test_len))
 
     def validation(self, batch_size):
         return self.test_data[0:batch_size]
