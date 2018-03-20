@@ -45,7 +45,7 @@ Num hidden: {}, Steps: {}, Display step: {}
 
 """.format(datasetName, num_hidden, training_steps, display_step))
 
-savePath = './trained/model2/{}/{}-{}'.format(datasetName, training_steps, num_hidden)
+savePath = './trained/model2-doucz/{}/{}-{}'.format(datasetName, training_steps, num_hidden)
 if not os.path.exists(savePath):
     os.makedirs(savePath)
 
