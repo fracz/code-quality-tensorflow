@@ -76,7 +76,7 @@ class RefactorDataset():
         return batch_data, batch_labels, batch_seqlen
 
 dataset = RefactorDataset(datasetName + "-rest-of-data")
-datasetClever = RefactorDataset(datasetName, .01)
+datasetClever = RefactorDataset(datasetName)
 
 ############################################ RNN
 
@@ -132,6 +132,7 @@ with tf.Session(config=config) as sess:
         sess.run(init)
 
         test_x, test_y, test_seqlen = dataset.test()
+        test_clever_x, test_clever_y, test_clever_seqlen = datasetClever.test()
 
         for step in range(1, training_steps+1):
             theDataset = dataset
@@ -146,10 +147,10 @@ with tf.Session(config=config) as sess:
             sess.run(train_op, feed_dict={train_inputs: batch_x, train_outputs: batch_y, seqlen: batch_seqlen})
             if step % display_step == 0 or step == 1:
                 # Calculate batch loss and accuracy
-                loss, acc = sess.run([loss_op, accuracy], feed_dict={train_inputs: test_x,
-                                                                     train_outputs: test_y,
-                                                                     seqlen: test_seqlen})
-                print(str(step) + "\t" + "{:.4f}".format(loss).replace('.', ',') + "\t" + "{:.3f}".format(acc).replace('.', ','))
+                loss, acc = sess.run([loss_op, accuracy], feed_dict={train_inputs: test_x, train_outputs: test_y, seqlen: test_seqlen})
+                loss_clever, acc_clever = sess.run([loss_op, accuracy], feed_dict={train_inputs: test_clever_x, train_outputs: test_clever_y, seqlen: test_clever_seqlen})
+                
+                print(str(step) + "\t" + "{:.4f}".format(loss).replace('.', ',') + "\t" + "{:.3f}".format(acc).replace('.', ',') + "\t" + "{:.4f}".format(loss_clever).replace('.', ',') + "\t" + "{:.3f}".format(acc_clever).replace('.', ','))
                 sys.stdout.flush()
 
         print("Optimization Finished!")
