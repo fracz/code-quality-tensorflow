@@ -134,12 +134,12 @@ with tf.Session(config=config) as sess:
         test_x, test_y, test_seqlen = dataset.test()
 
         for step in range(1, training_steps+1):
-			theDataset = dataset
-			if step >= train_clever_from:
-				theDataset = datasetClever
-				if !cleverUsed:
-					print("Now teaching with clever!")
-					cleverUsed = True
+            theDataset = dataset
+            if step >= train_clever_from:
+                theDataset = datasetClever
+                if !cleverUsed:
+                    print("Now teaching with clever!")
+                    cleverUsed = True
             batch_x, batch_y, batch_seqlen = dataset.next(batch_size)
 
             # Run optimization op (backprop)
