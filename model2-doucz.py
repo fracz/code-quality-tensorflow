@@ -137,7 +137,7 @@ with tf.Session(config=config) as sess:
             theDataset = dataset
             if step >= train_clever_from:
                 theDataset = datasetClever
-                if !cleverUsed:
+                if not cleverUsed:
                     print("Now teaching with clever!")
                     cleverUsed = True
             batch_x, batch_y, batch_seqlen = dataset.next(batch_size)
