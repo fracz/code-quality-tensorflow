@@ -107,12 +107,12 @@ datasetClever = RefactorDataset(datasetName)
 
 ############################################ RNN
 
-train_inputs_before = tf.placeholder(tf.int32, shape=[None, dataset.max_seqlen])
-train_inputs_after = tf.placeholder(tf.int32, shape=[None, dataset.max_seqlen])
-train_outputs = tf.placeholder(tf.float32, shape=[None, num_classes])
+train_inputs_before = tf.placeholder(tf.int32, shape=[None, dataset.max_seqlen], name="train_inputs_before")
+train_inputs_after = tf.placeholder(tf.int32, shape=[None, dataset.max_seqlen], name="train_inputs_after")
+train_outputs = tf.placeholder(tf.float32, shape=[None, num_classes], name="train_outputs")
 # https://github.com/aymericdamien/TensorFlow-Examples/blob/master/examples/3_NeuralNetworks/dynamic_rnn.py
-seqlen_before = tf.placeholder(tf.int32, [None])
-seqlen_after = tf.placeholder(tf.int32, [None])
+seqlen_before = tf.placeholder(tf.int32, [None], name="seqlen_before")
+seqlen_after = tf.placeholder(tf.int32, [None], name="seqlen_after")
 
 # https://www.tensorflow.org/tutorials/word2vec#building_the_graph
 embeddings = tf.Variable(tf.random_uniform([vocabulary_size, embedding_size], -1.0, 1.0))
@@ -140,7 +140,7 @@ with tf.variable_scope('after'):
 outputs = tf.concat([outputs_before, outputs_after], 1)
 logits = tf.matmul(outputs, weights) + biases
 
-prediction = tf.nn.softmax(logits)
+prediction = tf.nn.softmax(logits, name="prediction")
 loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=train_outputs))
 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
 train_op = optimizer.minimize(loss_op)
